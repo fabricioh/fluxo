@@ -1,0 +1,86 @@
+{
+  package main
+
+  import (
+    "fmt"
+    "strconv"
+  )
+
+  func Join(bytes interface{}) string {
+    result := ""
+    for _, b := range bytes.([]interface{}) {
+      result += string(b.([]uint8))
+    }
+    return result
+  }
+
+  func GetList[T any](list interface{}) []T {
+    result := []T{}
+
+    for _, raw := range list.([]interface{}) {
+      result = append(result, raw.(T))
+    }
+
+    return result
+  }
+}
+
+chain = _ ch: (comment/call_args/call/pipe)* _ {
+  return GetList[Call](ch), nil
+}
+
+call_args = _ i: ident ":"? v: value _ {
+  return Call{i.(string), v.(Literal)}, nil
+}
+
+call = _ i: ident _ {
+  return Call{i.(string), Nada}, nil
+}
+
+value = _ v: (pair/expression/nada/number/hashtag/text/logical/list/function) _ {return v, nil}
+value_no_pair = _ v: (expression/nada/number/hashtag/text/logical/list/function) _ {return v, nil}
+
+ident = _ i: [a-zA-Z0-9_/]+ _ {
+  return Join(i), nil
+}
+
+expression = _ "(" _ ch: chain _ ")" _ {
+  return Literal{ch, EXPRESSION}, nil
+}
+
+function = _ r: "*"? _ "{" _ f: chain _ "}" _ {
+	return Literal{CreateFunction(f.([]Call), (r != nil)), FUNCTION}, nil
+}
+
+list = _ "[" _ l: value* _ "]" _ {
+  return Literal{GetList[Literal](l), LIST}, nil
+}
+
+pair = _ l: value_no_pair "->" r: value_no_pair _ {
+  return Literal{Pair{l.(Literal), r.(Literal)}, PAIR}, nil
+}
+
+number = _ n: [0-9]+ _ {
+  num, _ := strconv.ParseInt(Join(n),10,0)
+  return Literal{num, NUMBER}, nil
+}
+
+hashtag = _ "#" t: ident _ {
+  return Literal{t, TEXT}, nil
+}
+
+text = _ "\"" t: [^"]* "\"" _ {
+  return Literal{Join(t), TEXT}, nil
+}
+
+logical = _ l: (truth/lie) _ {return Literal{l, LOGICAL}, nil}
+truth = ("true"/"OK") {return true, nil}
+lie = ("false"/"FAIL") {return false, nil}
+
+nada = _ "nada" _ {
+  return Nada, nil
+}
+
+comment = _ ";" [^\n\r]* _ {return Call{"comment", Nada}, nil}
+pipe = "|" {return Call{"pipe", Nada}, nil}
+_ = [ \n\r\t]*
