@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
+	"time"
 )
 
 /* Funções intrínsecas da linguagem */
@@ -278,13 +280,43 @@ func InitializeFunctions() {
 		},
 
 		{
-			name:        "greater",
+			name:        "less_eql",
+			constraints: Constraint{NUMBER, NUMBER},
+			implementation: func(flow, argument Literal) Literal {
+				return Literal{
+					flow.value.(int64) <= argument.value.(int64),
+					NUMBER,
+				}
+			},
+		},
+
+		{
+			name:        "grt",
 			constraints: Constraint{NUMBER, NUMBER},
 			implementation: func(flow, argument Literal) Literal {
 				return Literal{
 					flow.value.(int64) > argument.value.(int64),
 					NUMBER,
 				}
+			},
+		},
+
+		{
+			name:        "grt_eql",
+			constraints: Constraint{NUMBER, NUMBER},
+			implementation: func(flow, argument Literal) Literal {
+				return Literal{
+					flow.value.(int64) >= argument.value.(int64),
+					NUMBER,
+				}
+			},
+		},
+
+		{
+			name:        "not",
+			constraints: Constraint{LOGICAL, NADA},
+			implementation: func(flow, argument Literal) Literal {
+				return Literal{!flow.value.(bool), LOGICAL}
 			},
 		},
 
@@ -297,6 +329,33 @@ func InitializeFunctions() {
 				oldFlow := flow
 				ExecuteFunction(argument.value.(Function), flow, Nada)
 				return oldFlow
+			},
+		},
+
+		{
+			name:        "wait",
+			constraints: Constraint{ANY, NUMBER},
+			implementation: func(flow, argument Literal) Literal {
+				time.Sleep(time.Duration(argument.value.(int64)) * time.Millisecond)
+				return flow
+			},
+		},
+
+		{
+			name:        "exit",
+			constraints: Constraint{ANY, NUMBER},
+			implementation: func(flow, argument Literal) Literal {
+				os.Exit(int(argument.value.(int64)))
+				return flow
+			},
+		},
+
+		{
+			name:        "panic",
+			constraints: Constraint{ANY, TEXT},
+			implementation: func(flow, argument Literal) Literal {
+				Panic(argument.value.(string))
+				return flow
 			},
 		},
 
@@ -344,10 +403,20 @@ func InitializeFunctions() {
 			},
 		},
 
+		//-------------------------------------------------------- TYPE SYSTEM
+
+		{
+			name:        "type",
+			constraints: Constraint{LIST, ANY},
+			implementation: func(flow, argument Literal) Literal {
+				return Literal{flow.kind, TEXT}
+			},
+		},
+
 		//-------------------------------------------------------- FILES
 
 		{
-			name:        "execute_files",
+			name:        "exec",
 			constraints: Constraint{ANY, LIST},
 			implementation: func(flow, argument Literal) Literal {
 				for _, literal := range argument.value.([]Literal) {

@@ -47,13 +47,13 @@ val: {slice: 1 -> (len | sub: 1)} | def: #rest
 ;------------------------------------------
 
 val: * {
-  if: {len | greater: 0} -> (idem: {
+  if: {len | grt: 0} -> (idem: {
     aside: (idem: {
       first
       do: nada -> (arg)
     })
 
-    if: {len | greater: 1} -> (idem: {
+    if: {len | grt: 1} -> (idem: {
       rest
       self: (arg)
     })
