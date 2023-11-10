@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 /* Funções intrínsecas da linguagem */
 
@@ -338,6 +341,26 @@ func InitializeFunctions() {
 				list := flow.value.([]Literal)
 				list = append(list, argument)
 				return Literal{list, LIST}
+			},
+		},
+
+		//-------------------------------------------------------- FILES
+
+		{
+			name:        "execute_files",
+			constraints: Constraint{ANY, LIST},
+			implementation: func(flow, argument Literal) Literal {
+				for _, literal := range argument.value.([]Literal) {
+					fileName := literal.value.(string)
+
+					if !strings.HasSuffix(fileName, ".fl") {
+						fileName += ".fl"
+					}
+
+					ExecuteFile(fileName)
+				}
+
+				return flow
 			},
 		},
 	}

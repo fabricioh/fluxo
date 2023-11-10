@@ -1,4 +1,8 @@
-print
+execute_files: [#lib]
 
-; Hello, world!
+val: [11 23 45 76 27 89 90]
+each: (bind: 2 -> {
+	mul: (arg)
+	println
+})
 

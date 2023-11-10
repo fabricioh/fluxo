@@ -1,0 +1,63 @@
+;=== FLUXO STANDARD LIBRARY ===;
+
+
+; Esta função é uma das mais básicas,
+; pois outras funções como map, filter,
+; rest, etc, dependem dela
+;---------------------------------------
+
+val: {
+
+  ; Coloca uma list vazia na stack
+  aside: {val: [] | push}
+
+  do: (arg) -> * {
+    ; Adiciona à list guardada na stack o
+    ; elemento no index atual
+    aside: (idem: {
+      index: (arg | left) | push
+      peek: 1 | append: (peek)
+      pop | pop | push
+    })
+
+    ; Se o index atual já não for igual
+    ; ao index máximo, adiciona 1 ao index
+    ; atual e repete
+    if: (idem: {
+      arg | left | less: (arg | right)
+    }) -> (idem: {
+      self: (arg | left | add: 1) -> (arg | right)
+    })
+  }
+
+  ; Retorna a lista e limpa a stack
+  peek | pop
+}
+def: #slice
+
+val: {index: 0} | def: #first
+val: {slice: 1 -> (len | sub: 1)} | def: #rest
+
+
+; Each recursivo, permitindo usar
+; a stack dentro da função passada
+; 
+; O que possibilitou isso foi a capacidade
+; de dividir uma list em "first" e "rest"
+;------------------------------------------
+
+val: * {
+  if: {len | greater: 0} -> (idem: {
+    aside: (idem: {
+      first
+      do: nada -> (arg)
+    })
+
+    if: {len | greater: 1} -> (idem: {
+      rest
+      self: (arg)
+    })
+  })
+}
+def: #each
+

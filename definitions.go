@@ -71,4 +71,5 @@ var FUNCTIONS = []Function{}
 var STACK = Stack[Literal]{}
 var ARGUMENT_STACK = Stack[Literal]{}
 var FUNCTION_STACK = Stack[Function]{}
+var PATH_STACK = Stack[string]{}
 var Nada = Literal{"nada", NADA}

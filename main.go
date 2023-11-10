@@ -1,26 +1,16 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 func main() {
+	if len(os.Args) > 1 {
+		InitializeFunctions()
+		ExecuteFile(os.Args[1])
 
-	file, err := os.ReadFile("test.fl")
-	if err != nil {
-		panic(err)
+	} else {
+		fmt.Printf("fluxo v0.1-alpha\nusage: fluxo [source_file]")
 	}
-
-	result, err := Parse("main", file)
-	if err != nil {
-		panic(err)
-	}
-
-	InitializeFunctions()
-	ExecuteCalls(result.([]Call), Literal{"Hello, world!", TEXT})
 }
-
-/*
-- Tagged unions (Enums helpful);
-- Function pointers;
-- Global mutable array;
-- Lambdas/Closures;
-*/

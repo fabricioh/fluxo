@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 )
 
 func SolveExpressions(raw, flow Literal) Literal {
@@ -37,7 +39,7 @@ func CheckFunctionConstraints(function Function, flow, argument Literal) bool {
 	if function.constraints.flow != ANY {
 		if flow.kind != function.constraints.flow {
 			Panic(fmt.Sprintf(
-				"function %s expected %s in the flow, got %s\n",
+				"function '%s' expected %s in the flow, got %s\n",
 				function.name, function.constraints.flow, flow.kind,
 			))
 			return false
@@ -47,7 +49,7 @@ func CheckFunctionConstraints(function Function, flow, argument Literal) bool {
 	if function.constraints.parameter != ANY {
 		if argument.kind != function.constraints.parameter {
 			Panic(fmt.Sprintf(
-				"error: Function %s expected %s as argument, got %s\n",
+				"function '%s' expected %s as argument, got %s\n",
 				function.name, function.constraints.parameter, argument.kind,
 			))
 			return false
@@ -103,4 +105,34 @@ func ExecuteCalls(calls []Call, startingFlow Literal) Literal {
 	}
 
 	return flow
+}
+
+func ExecuteFile(path string) {
+	currentPath := ""
+
+	if len(PATH_STACK.content) == 0 {
+		currentPath, _ = os.Getwd()
+	}
+
+	currentPath, _ = PATH_STACK.Peek(0)
+	absolutePath, _ := filepath.Abs(filepath.Dir(currentPath) + "\\" + path)
+
+	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
+		Panic("couldn't find file: " + absolutePath)
+	}
+
+	PATH_STACK.Push(absolutePath)
+	defer PATH_STACK.Pop()
+
+	file, err := os.ReadFile(absolutePath)
+	if err != nil {
+		Panic(err.Error())
+	}
+
+	code, err := Parse(filepath.Base(absolutePath), file)
+	if err != nil {
+		Panic(err.Error())
+	}
+
+	ExecuteCalls(code.([]Call), Nada)
 }
