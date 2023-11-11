@@ -1,5 +1,5 @@
 <p align="center">
-<img src="assets/fluxo_logo.png" height="40">
+<img src="assets/fluxo_logo.png" height="50">
 <br>
 <br>
 Fluxo é uma linguagem de script concatenativa.
