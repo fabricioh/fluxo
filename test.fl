@@ -1,9 +1,0 @@
-exec: [#lib]
-
-val: [11 23 45 76 27 89 90]
-each: (bind: 2 -> {
-	mul: (arg)
-	println
-	wait: 100
-})
-
