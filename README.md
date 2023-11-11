@@ -1,6 +1,8 @@
-### Fluxo 🌀
+<p align="center">
+	<img src="assets/fluxo_logo.png" height="40">
+</p>
 
-Fluxo é uma linguagem de script procedural e concatenativa.
+Fluxo é uma linguagem de script concatenativa.
 
 ```
 do: 0 -> * {
