@@ -30,11 +30,13 @@ chain = _ ch: (comment/call_args/call/pipe)* _ {
 }
 
 call_args = _ i: ident ":"? v: value _ {
-  return Call{i.(string), v.(Literal)}, nil
+	file, _ := PATH_STACK.Peek(0)
+  return Call{i.(string), v.(Literal), file, c.pos.line}, nil
 }
 
 call = _ i: ident _ {
-  return Call{i.(string), Nada}, nil
+	file, _ := PATH_STACK.Peek(0)
+  return Call{i.(string), Nada, file, c.pos.line}, nil
 }
 
 value = _ v: (pair/expression/nada/number/hashtag/text/logical/list/function) _ {return v, nil}
@@ -49,7 +51,10 @@ expression = _ "(" _ ch: chain _ ")" _ {
 }
 
 function = _ r: "*"? _ "{" _ f: chain _ "}" _ {
-	return Literal{CreateFunction(f.([]Call), (r != nil)), FUNCTION}, nil
+	fn := CreateFunction(f.([]Call), (r != nil))
+	fn.file, _ = PATH_STACK.Peek(0)
+	fn.line = c.pos.line
+	return Literal{fn, FUNCTION}, nil
 }
 
 list = _ "[" _ l: value* _ "]" _ {
@@ -81,6 +86,15 @@ nada = _ "nada" _ {
   return Nada, nil
 }
 
-comment = _ ";" [^\n\r]* _ {return Call{"comment", Nada}, nil}
-pipe = "|" {return Call{"pipe", Nada}, nil}
+comment = _ ";" [^\n\r]* _ {
+	file, _ := PATH_STACK.Peek(0)
+	return Call{"comment", Nada, file, c.pos.line}, nil
+}
+
+pipe = "|" {
+	file, _ := PATH_STACK.Peek(0)
+	return Call{"pipe", Nada, file, c.pos.line}, nil
+}
+
 _ = [ \n\r\t]*
+

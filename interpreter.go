@@ -6,23 +6,45 @@ import (
 	"path/filepath"
 )
 
-func SolveExpressions(raw, flow Literal) Literal {
+func SolveExpressions(raw, flow Literal) (Literal, error) {
 	switch raw.kind {
 	case EXPRESSION:
-		return ExecuteCalls(raw.value.([]Call), flow)
+		result, err := ExecuteCalls(raw.value.([]Call), flow)
+
+		if err != nil {
+			return Nada, fmt.Errorf("| inside expression:\n%w", err)
+		}
+
+		return result, nil
+
 	case LIST:
 		solvedList := []Literal{}
 		for _, literal := range raw.value.([]Literal) {
-			solvedList = append(solvedList, SolveExpressions(literal, flow))
+			solved, err := SolveExpressions(literal, flow)
+
+			if err != nil {
+				return Nada, nil
+			}
+
+			solvedList = append(solvedList, solved)
 		}
-		return Literal{solvedList, LIST}
+		return Literal{solvedList, LIST}, nil
+
 	case PAIR:
-		return Literal{Pair{
-			SolveExpressions(raw.value.(Pair).left, flow),
-			SolveExpressions(raw.value.(Pair).right, flow),
-		}, PAIR}
+		left, err := SolveExpressions(raw.value.(Pair).left, flow)
+		if err != nil {
+			return Nada, err
+		}
+
+		right, err := SolveExpressions(raw.value.(Pair).right, flow)
+		if err != nil {
+			return Nada, err
+		}
+
+		return Literal{Pair{left, right}, PAIR}, nil
+
 	default:
-		return raw
+		return raw, nil
 	}
 }
 
@@ -35,37 +57,35 @@ func SearchFunction(name string) (Function, bool) {
 	return Function{}, false
 }
 
-func CheckFunctionConstraints(function Function, flow, argument Literal) bool {
+func CheckFunctionConstraints(function Function, flow, argument Literal) error {
 	if function.constraints.flow != ANY {
 		if flow.kind != function.constraints.flow {
-			Panic(fmt.Sprintf(
-				"function '%s' expected %s in the flow, got %s\n",
-				function.name, function.constraints.flow, flow.kind,
-			))
-			return false
+			return fmt.Errorf("\nfunction '%s' expected %s in the flow, got %s",
+				function.name, function.constraints.flow, flow.kind)
 		}
 	}
 
 	if function.constraints.parameter != ANY {
 		if argument.kind != function.constraints.parameter {
-			Panic(fmt.Sprintf(
-				"function '%s' expected %s as argument, got %s\n",
-				function.name, function.constraints.parameter, argument.kind,
-			))
-			return false
+			return fmt.Errorf("\nfunction '%s' expected %s as argument, got %s",
+				function.name, function.constraints.parameter, argument.kind)
 		}
 	}
 
-	return true
+	return nil
 }
 
-func ExecuteFunction(function Function, flow, argument Literal) Literal {
+func ExecuteFunction(function Function, flow, argument Literal) (Literal, error) {
 	// fmt.Printf("calling: %s\n", function.name)
 
-	expandedArgument := SolveExpressions(argument, flow)
+	expandedArgument, err := SolveExpressions(argument, flow)
+	if err != nil {
+		return Nada, err
+	}
 
-	if !CheckFunctionConstraints(function, flow, expandedArgument) {
-		Panic(fmt.Sprintf("function %s's constraints not met!!!!", function.name))
+	err = CheckFunctionConstraints(function, flow, expandedArgument)
+	if err != nil {
+		return Nada, err
 	}
 
 	if function.is_bound {
@@ -86,10 +106,16 @@ func ExecuteFunction(function Function, flow, argument Literal) Literal {
 		defer FUNCTION_STACK.Pop()
 	}
 
-	return function.implementation(flow, expandedArgument)
+	result, err := function.implementation(flow, expandedArgument)
+
+	if err != nil {
+		return Nada, err
+	}
+
+	return result, nil
 }
 
-func ExecuteCalls(calls []Call, startingFlow Literal) Literal {
+func ExecuteCalls(calls []Call, startingFlow Literal) (Literal, error) {
 	flow := startingFlow
 
 	for _, call := range calls {
@@ -98,16 +124,28 @@ func ExecuteCalls(calls []Call, startingFlow Literal) Literal {
 		}
 
 		if function, ok := SearchFunction(call.functionName); ok {
-			flow = ExecuteFunction(function, flow, call.argument)
+			var err error = nil
+
+			flow, err = ExecuteFunction(function, flow, call.argument)
+
+			if err != nil {
+				return Nada, fmt.Errorf("| %s: at %s line %d\n%w",
+					call.functionName,
+					filepath.Base(call.file),
+					call.line,
+					err,
+				)
+			}
+
 		} else {
-			Panic(fmt.Sprintf("function %s not found!!!!", call.functionName))
+			return Nada, fmt.Errorf("function %s not found", call.functionName)
 		}
 	}
 
-	return flow
+	return flow, nil
 }
 
-func ExecuteFile(path string) {
+func ExecuteFile(path string) error {
 	currentPath := ""
 
 	if len(PATH_STACK.content) == 0 {
@@ -118,21 +156,28 @@ func ExecuteFile(path string) {
 	absolutePath, _ := filepath.Abs(filepath.Dir(currentPath) + "\\" + path)
 
 	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
-		Panic("couldn't find file: " + absolutePath)
+		return fmt.Errorf("\ncouldn't find file: %s", absolutePath)
 	}
 
 	PATH_STACK.Push(absolutePath)
-	defer PATH_STACK.Pop()
 
 	file, err := os.ReadFile(absolutePath)
 	if err != nil {
-		Panic(err.Error())
+		return err
 	}
 
 	code, err := Parse(filepath.Base(absolutePath), file)
 	if err != nil {
-		Panic(err.Error())
+		return err
 	}
 
-	ExecuteCalls(code.([]Call), Nada)
+	_, err = ExecuteCalls(code.([]Call), Nada)
+
+	if err != nil {
+		return err
+	}
+
+	PATH_STACK.Pop()
+
+	return nil
 }

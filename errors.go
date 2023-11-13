@@ -3,16 +3,21 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/fatih/color"
 )
 
 func Panic(message string) {
 	currentFile, _ := PATH_STACK.Peek(0)
 
-	println("\n===========ERROR===========\n")
+	fmt.Printf("\n===========%s===========\n", color.MagentaString("ERROR"))
+
 	if len(PATH_STACK.content) > 0 {
-		fmt.Printf("while executing %s\n\n", currentFile)
+		fmt.Printf("\nwhile executing file: %s\n\n", color.CyanString(currentFile))
 	}
-	fmt.Printf("info: %s\n", message)
+
+	fmt.Printf("trace:\n%s\n", message)
 	println()
+
 	os.Exit(1)
 }

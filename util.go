@@ -10,12 +10,14 @@ func FormatLiteral(literal Literal) string {
 			result += FormatLiteral(elem) + " "
 		}
 		return result + "]"
+
 	case PAIR:
 		return fmt.Sprintf(
 			"(%s -> %s)",
 			FormatLiteral(literal.value.(Pair).left),
 			FormatLiteral(literal.value.(Pair).right),
 		)
+
 	case FUNCTION:
 		function := literal.value.(Function)
 		result := "("
@@ -37,6 +39,7 @@ func FormatLiteral(literal Literal) string {
 		}
 
 		return result + ")"
+
 	default:
 		return fmt.Sprintf("%v", literal.value)
 	}
@@ -51,7 +54,7 @@ func CreateFunction(body []Call, is_recursive bool) Function {
 		constraints:  Constraint{ANY, ANY},
 	}
 
-	newFunction.implementation = func(flow, argument Literal) Literal {
+	newFunction.implementation = func(flow, argument Literal) (Literal, error) {
 		return ExecuteCalls(newFunction.body, flow)
 	}
 

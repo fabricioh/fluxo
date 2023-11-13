@@ -1,4 +1,16 @@
-;=== FLUXO STANDARD LIBRARY ===;
+; === ELO STANDARD LIBRARY === ;
+
+;==================================
+;               IO
+;==================================
+
+val: {aside: (idem: {arg | join | println})}
+def: #log
+
+
+;==================================
+;           COLLECTIONS
+;==================================
 
 
 ; Esta função é uma das mais básicas,
@@ -61,3 +73,85 @@ val: * {
 }
 def: #each
 
+
+; Esta função usa o método de rotacionar uma list
+; para percorrê-la, tendo ao fim uma list do mesmo
+; tamanho mas com os elementos processados pela
+; função passada
+; 
+; Não utiliza a stack
+;-------------------------------------------------
+
+val: {
+
+  ; Passa a função recebida e o tamanho
+  ; da list como argumento
+  do: (val: (arg) -> (len | sub: 1)) -> * {
+
+    ; Adiciona o elemento processado ao fim da list
+    append: (
+      first | do: nada -> (arg | left)
+    )
+
+    ; Tira o primeiro item da list, pois já
+    ; foi processado
+    rest
+
+    ; Se não tiver iterado tantas vezes quanto
+    ; o tamanho da list, repete
+    if: (idem: {arg | right | grt: 0}) -> (idem: {
+      self: (arg | left) -> (arg | right | sub: 1)
+    }) 
+  }
+}
+def: #map
+
+
+; Usa o mesmo método do map, mas a inclusão do elemento
+; processado na list é condicional
+; 
+; Assim a list resultante não precisa ter o mesmo
+; tamanho da de entrada
+;-------------------------------------------------------
+
+val: {
+  do: (val: (arg) -> (len | sub: 1)) -> * {
+
+    aside: (idem: {
+      first
+      do: nada -> (arg | left)
+      push
+    })
+
+    if: {peek} -> {append: (first)}
+    pop
+
+    rest
+
+    if: (idem: {arg | right | grt: 0}) -> (idem: {
+      self: (arg | left) -> (arg | right | sub: 1)
+    }) 
+  }
+}
+def: #filter
+
+
+;==================================
+;              TEXT
+;==================================
+
+val: {
+  aside: {val: "" | push}
+
+  each: {
+    as: #TEXT
+    push
+    peek: 1
+    conc: (peek)
+    pop | pop
+    push
+  }
+
+  peek | pop
+}
+def: #join

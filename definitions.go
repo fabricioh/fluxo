@@ -25,6 +25,8 @@ type Pair struct {
 type Call struct {
 	functionName string
 	argument     Literal
+	file         string
+	line         int
 }
 
 type Function struct {
@@ -34,7 +36,9 @@ type Function struct {
 	is_recursive   bool
 	is_bound       bool
 	bound_argument Literal
-	implementation func(Literal, Literal) Literal
+	file           string
+	line           int
+	implementation func(Literal, Literal) (Literal, error)
 }
 
 type Constraint struct {
