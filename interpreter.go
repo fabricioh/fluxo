@@ -60,14 +60,14 @@ func SearchFunction(name string) (Function, bool) {
 func CheckFunctionConstraints(function Function, flow, argument Literal) error {
 	if function.constraints.flow != ANY {
 		if flow.kind != function.constraints.flow {
-			return fmt.Errorf("\nfunction '%s' expected %s in the flow, got %s",
+			return fmt.Errorf("\nfunction '%s' expected @%s in the flow, got @%s",
 				function.name, function.constraints.flow, flow.kind)
 		}
 	}
 
 	if function.constraints.parameter != ANY {
 		if argument.kind != function.constraints.parameter {
-			return fmt.Errorf("\nfunction '%s' expected %s as argument, got %s",
+			return fmt.Errorf("\nfunction '%s' expected @%s as argument, got @%s",
 				function.name, function.constraints.parameter, argument.kind)
 		}
 	}
@@ -93,6 +93,7 @@ func ExecuteFunction(function Function, flow, argument Literal) (Literal, error)
 
 		ARGUMENT_STACK.Push(function.bound_argument)
 		defer ARGUMENT_STACK.Pop()
+
 	} else {
 		if expandedArgument != Nada {
 			// fmt.Printf("pushing argument: %s\n", FormatLiteral(expandedArgument))

@@ -40,6 +40,9 @@ func FormatLiteral(literal Literal) string {
 
 		return result + ")"
 
+	case TYPE:
+		return "@" + literal.value.(string)
+
 	default:
 		return fmt.Sprintf("%v", literal.value)
 	}

@@ -1,16 +1,16 @@
 package main
 
 const (
-	ANY        = "ANY"
-	NADA       = "NADA"
-	TEXT       = "TEXT"
-	PAIR       = "PAIR"
-	LIST       = "LIST"
-	TYPE       = "TYPE"
-	NUMBER     = "NUMBER"
-	LOGICAL    = "LOGICAL"
-	FUNCTION   = "FUNCTION"
-	EXPRESSION = "EXPRESSION"
+	ANY        = "any"
+	NADA       = "nada"
+	TEXT       = "text"
+	PAIR       = "pair"
+	LIST       = "list"
+	TYPE       = "type"
+	NUMBER     = "number"
+	LOGICAL    = "logical"
+	FUNCTION   = "function"
+	EXPRESSION = "expression"
 )
 
 type Literal struct {

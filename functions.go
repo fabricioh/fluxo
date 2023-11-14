@@ -422,8 +422,16 @@ func InitializeFunctions() {
 		// },
 
 		{
+			name:        "type",
+			constraints: Constraint{ANY, TYPE},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				return Literal{flow.kind, TYPE}, nil
+			},
+		},
+
+		{
 			name:        "as",
-			constraints: Constraint{ANY, TEXT},
+			constraints: Constraint{ANY, TYPE},
 			implementation: func(flow, argument Literal) (Literal, error) {
 				switch argument.value.(string) {
 				case TEXT:

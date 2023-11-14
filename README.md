@@ -4,7 +4,7 @@
 <br>
 Fluxo é uma linguagem de script concatenativa.
 <br>
-Dê uma olhada na <a href="https://github.com/fabricioh/fluxo/wiki/Introdu%C3%A7%C3%A3o-%C3%A0-linguagem">introdução à linguagem</a>.
+Dê uma olhada na <a href="https://github.com/fabricioh/fluxo/wiki/Introdu%C3%A7%C3%A3o-%C3%A0-linguagem">Introdução à linguagem</a>. Depois veja a <a href="https://github.com/fabricioh/fluxo/wiki/Documenta%C3%A7%C3%A3o">Documentação</a>.
 <br>
 Faça o download <a href="https://github.com/fabricioh/fluxo/releases">aqui</a>.
 <br>

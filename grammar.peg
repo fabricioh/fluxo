@@ -39,8 +39,8 @@ call = _ i: ident _ {
   return Call{i.(string), Nada, file, c.pos.line}, nil
 }
 
-value = _ v: (pair/expression/nada/number/hashtag/text/logical/list/function) _ {return v, nil}
-value_no_pair = _ v: (expression/nada/number/hashtag/text/logical/list/function) _ {return v, nil}
+value = _ v: (pair/expression/nada/number/hashtag/text/logical/list/function/kind) _ {return v, nil}
+value_no_pair = _ v: (expression/nada/number/hashtag/text/logical/list/function/kind) _ {return v, nil}
 
 ident = _ i: [a-zA-Z0-9_/]+ _ {
   return Join(i), nil
@@ -63,6 +63,10 @@ list = _ "[" _ l: value* _ "]" _ {
 
 pair = _ l: value_no_pair "->" r: value_no_pair _ {
   return Literal{Pair{l.(Literal), r.(Literal)}, PAIR}, nil
+}
+
+kind = _ "@" k: ("any"/"nada"/"text"/"number"/"logical"/"pair"/"list"/"function") _ {
+	return Literal{string(k.([]uint8)), TYPE}, nil
 }
 
 number = _ n: [0-9]+ _ {
