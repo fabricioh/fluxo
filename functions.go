@@ -269,6 +269,69 @@ func InitializeFunctions() {
 		},
 
 		{
+			name:        "case",
+			constraints: Constraint{ANY, LIST},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				for _, elem := range argument.value.([]Literal) {
+					test := elem.value.(Pair).left.value.(Function)
+					arm := elem.value.(Pair).right.value.(Function)
+
+					result, err := ExecuteFunction(test, flow, Nada)
+
+					if err != nil {
+						return Nada, err
+					}
+
+					if result.value.(bool) {
+						return ExecuteFunction(arm, flow, Nada)
+					}
+				}
+
+				return flow, nil
+			},
+		},
+
+		{
+			name:        "and",
+			constraints: Constraint{ANY, LIST},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				for _, elem := range argument.value.([]Literal) {
+					result, err := ExecuteFunction(elem.value.(Function), flow, Nada)
+
+					if err != nil {
+						return Nada, err
+					}
+
+					if !result.value.(bool) {
+						return Literal{false, LOGICAL}, nil
+					}
+				}
+
+				return Literal{true, LOGICAL}, nil
+			},
+		},
+
+		{
+			name:        "or",
+			constraints: Constraint{ANY, LIST},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				for _, elem := range argument.value.([]Literal) {
+					result, err := ExecuteFunction(elem.value.(Function), flow, Nada)
+
+					if err != nil {
+						return Nada, err
+					}
+
+					if result.value.(bool) {
+						return Literal{true, LOGICAL}, nil
+					}
+				}
+
+				return Literal{false, LOGICAL}, nil
+			},
+		},
+
+		{
 			name:        "less",
 			constraints: Constraint{NUMBER, NUMBER},
 			implementation: func(flow, argument Literal) (Literal, error) {
@@ -317,6 +380,14 @@ func InitializeFunctions() {
 			constraints: Constraint{LOGICAL, NADA},
 			implementation: func(flow, argument Literal) (Literal, error) {
 				return Literal{!flow.value.(bool), LOGICAL}, nil
+			},
+		},
+
+		{
+			name:        "else",
+			constraints: Constraint{ANY, NADA},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				return Literal{true, LOGICAL}, nil
 			},
 		},
 

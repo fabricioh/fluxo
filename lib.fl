@@ -5,7 +5,7 @@
 ;==================================
 
 val: {aside: (idem: {arg | join | println})}
-def: #log
+def: #printf
 
 
 ;==================================
@@ -144,7 +144,7 @@ val: {
   aside: {val: "" | push}
 
   each: {
-    as: #TEXT
+    as: @text
     push
     peek: 1
     conc: (peek)
@@ -155,3 +155,4 @@ val: {
   peek | pop
 }
 def: #join
+
