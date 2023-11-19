@@ -519,6 +519,14 @@ func InitializeFunctions() {
 		},
 
 		{
+			name:        "is",
+			constraints: Constraint{ANY, TYPE},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				return Literal{flow.kind == argument.value.(string), LOGICAL}, nil
+			},
+		},
+
+		{
 			name:        "as",
 			constraints: Constraint{ANY, TYPE},
 			implementation: func(flow, argument Literal) (Literal, error) {

@@ -19,9 +19,30 @@ do: 0 -> * {
   arg
   println
 
-  if: {less: 10} -> (idem: {
-    self: (arg | add: 1)
-  })
+  if: {less: 10} -> {
+    self: (add: 1)
+  }
 }
 ```
 
+## Utilização
+
+Basta baixar o zip [aqui](https://github.com/fabricioh/fluxo/releases), extrair e colocar o executável na variável de ambiente Path.
+
+O seguinte programa é um Hello World em fluxo:
+
+```
+val: "Hello, World!" | println
+```
+
+Para incluir no seu script o arquivo `lib.fl` que vem com o release, basta usar a função `exec` passando o caminho para o arquivo como o primeiro valor de uma lista:
+
+```
+exec: ["lib.fl"]
+
+val: ["hello" "fluxo!"]
+each: {println}
+
+; hello
+; fluxo!
+```
