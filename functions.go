@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -64,7 +65,7 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- MATH
+		//-------------------------------------------------------- OPERAÇÕES MATEMÁTICAS
 
 		{
 			name:        "add",
@@ -106,7 +107,32 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- FUNCTIONS
+		//-------------------------------------------------------- VARIÁVEIS
+
+		{
+			name:        "set",
+			constraints: Constraint{ANY, TEXT},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				VARIABLES[argument.value.(string)] = flow
+				return flow, nil
+			},
+		},
+
+		{
+			name:        "get",
+			constraints: Constraint{ANY, TEXT},
+			implementation: func(flow, argument Literal) (Literal, error) {
+				val, ok := VARIABLES[argument.value.(string)]
+
+				if !ok {
+					return Nada, fmt.Errorf("\nvariable '%s' not defined", argument.value.(string))
+				}
+
+				return val, nil
+			},
+		},
+
+		//-------------------------------------------------------- FUNÇÕES
 
 		{
 			name:        "def",
@@ -245,7 +271,7 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- CONDITIONALS
+		//-------------------------------------------------------- CONDICIONAIS
 
 		{
 			name:        "if",
@@ -391,7 +417,7 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- CONTROL FLOW
+		//-------------------------------------------------------- CONTROLE DE FLUXO
 
 		{
 			name:        "aside",
@@ -434,7 +460,7 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- COLLECTIONS
+		//-------------------------------------------------------- LIST E PAIR
 
 		{
 			name:        "left",
@@ -482,15 +508,7 @@ func InitializeFunctions() {
 			},
 		},
 
-		//-------------------------------------------------------- TYPE SYSTEM
-
-		// {
-		// 	name:        "model",
-		// 	constraints: Constraint{ANY, ANY},
-		// 	implementation: func(flow, argument Literal) (Literal, error) {
-		// 		return Literal{DetermineModel(flow), TEXT}
-		// 	},
-		// },
+		//-------------------------------------------------------- TIPOS
 
 		{
 			name:        "type",
@@ -508,19 +526,45 @@ func InitializeFunctions() {
 				case TEXT:
 					return Literal{FormatLiteral(flow), TEXT}, nil
 
-				default:
-					return Nada, errors.New("\ninvalid type name passed to function 'as'")
+				case NUMBER:
+					if flow.kind == TEXT {
+						number, err := strconv.ParseInt(flow.value.(string), 10, 64)
+
+						if err != nil {
+							return Nada, err
+						}
+
+						return Literal{number, NUMBER}, nil
+
+					} else {
+						return Nada, fmt.Errorf("\ncan't convert @%s to @number", flow.kind)
+					}
+
+				case NADA:
+					return Nada, nil
+
+				case ANY, PAIR, TYPE, LIST, LOGICAL, FUNCTION:
+					return Nada, fmt.Errorf("\ncan't convert @%s to @%s", flow.kind, argument.value.(string))
 				}
+
+				return Nada, fmt.Errorf("\nno such type as @%s", argument.value.(string))
 			},
 		},
 
-		//-------------------------------------------------------- FILES
+		//-------------------------------------------------------- ARQUIVOS
 
 		{
 			name:        "exec",
 			constraints: Constraint{ANY, LIST},
 			implementation: func(flow, argument Literal) (Literal, error) {
 				for _, literal := range argument.value.([]Literal) {
+					if literal.kind != TEXT {
+						return Nada, fmt.Errorf(
+							"\nfunction 'exec' expected a @list of @text, found element of type @%s",
+							literal.kind,
+						)
+					}
+
 					fileName := literal.value.(string)
 
 					if !strings.HasSuffix(fileName, ".fl") {

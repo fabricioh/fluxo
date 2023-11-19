@@ -72,6 +72,7 @@ func (s *Stack[T]) Peek(index int) (T, bool) {
 }
 
 var FUNCTIONS = []Function{}
+var VARIABLES = map[string]Literal{}
 var STACK = Stack[Literal]{}
 var ARGUMENT_STACK = Stack[Literal]{}
 var FUNCTION_STACK = Stack[Function]{}
