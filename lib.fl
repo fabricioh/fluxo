@@ -1,158 +1,149 @@
-; === ELO STANDARD LIBRARY === ;
-
-;==================================
-;               IO
-;==================================
-
-val: {aside: (idem: {arg | join | println})}
-def: #printf
+-- FLUXO STANDARD LIBRARY --
 
 
-;==================================
-;           COLLECTIONS
-;==================================
+------------------------------------ IO
+
+val: {aside: (idem: {arg > lib/join > println})}
+def: #lib/printf
 
 
-; Esta função é uma das mais básicas,
-; pois outras funções como map, filter,
-; rest, etc, dependem dela
-;---------------------------------------
+------------------------------------ LIST
+
+
+-- Esta função é uma das mais básicas,
+-- pois outras funções como map, lib/filter,
+-- rest, etc, dependem dela
 
 val: {
 
-  ; Coloca uma list vazia na stack
-  aside: {val: [] | push}
+  -- Coloca uma list vazia na stack
+  aside: {val: [] > push}
 
-  do: (arg) -> * {
-    ; Adiciona à list guardada na stack o
-    ; elemento no index atual
+  do: (arg) & %{
+    -- Adiciona à list guardada na stack o
+    -- elemento no index atual
     aside: (idem: {
-      index: (arg | left) | push
-      peek: 1 | append: (peek)
-      pop | pop | push
+      index: (arg > left) > push
+      peek: 1 > append: (peek)
+      pop > pop > push
     })
 
-    ; Se o index atual já não for igual
-    ; ao index máximo, adiciona 1 ao index
-    ; atual e repete
+    -- Se o index atual já não for igual
+    -- ao index máximo, adiciona 1 ao index
+    -- atual e repete
     if: (idem: {
-      arg | left | less: (arg | right)
-    }) -> (idem: {
-      self: (arg | left | add: 1) -> (arg | right)
+      arg > left > less: (arg > right)
+    }) & (idem: {
+      self: (arg > left > add: 1) & (arg > right)
     })
   }
 
-  ; Retorna a lista e limpa a stack
-  peek | pop
+  -- Retorna a lista e limpa a stack
+  peek > pop
 }
-def: #slice
+def: #lib/slice
 
-val: {index: 0} | def: #first
-val: {slice: 1 -> (len | sub: 1)} | def: #rest
+val: {index: 0} > def: #lib/head
+val: {lib/slice: 1 & (len > sub: 1)} > def: #lib/tail
 
 
-; Each recursivo, permitindo usar
-; a stack dentro da função passada
-; 
-; O que possibilitou isso foi a capacidade
-; de dividir uma list em "first" e "rest"
-;------------------------------------------
+-- Each recursivo, permitindo usar
+-- a stack dentro da função passada
+-- 
+-- O que possibilitou isso foi a capacidade
+-- de dividir uma list em "first" e "rest"
 
-val: * {
-  if: {len | grt: 0} -> (idem: {
+val: %{
+  if: {len > grt: 0} & (idem: {
     aside: (idem: {
-      first
-      do: nada -> (arg)
+      lib/head
+      do: nada & (arg)
     })
 
-    if: {len | grt: 1} -> (idem: {
-      rest
+    if: {len > grt: 1} & (idem: {
+      lib/tail
       self: (arg)
     })
   })
 }
-def: #each
+def: #lib/each
 
 
-; Esta função usa o método de rotacionar uma list
-; para percorrê-la, tendo ao fim uma list do mesmo
-; tamanho mas com os elementos processados pela
-; função passada
-; 
-; Não utiliza a stack
-;-------------------------------------------------
+-- Esta função usa o método de rotacionar uma list
+-- para percorrê-la, tendo ao fim uma list do mesmo
+-- tamanho mas com os elementos processados pela
+-- função passada
+-- 
+-- Não utiliza a stack
 
 val: {
 
-  ; Passa a função recebida e o tamanho
-  ; da list como argumento
-  do: (val: (arg) -> (len | sub: 1)) -> * {
+  -- Passa a função recebida e o tamanho
+  -- da list como argumento
+  do: (val: (arg) & (len > sub: 1)) & %{
 
-    ; Adiciona o elemento processado ao fim da list
+    -- Adiciona o elemento processado ao fim da list
     append: (
-      first | do: nada -> (arg | left)
+      lib/head > do: nada & (arg > left)
     )
 
-    ; Tira o primeiro item da list, pois já
-    ; foi processado
-    rest
+    -- Tira o primeiro item da list, pois já
+    -- foi processado
+    lib/tail
 
-    ; Se não tiver iterado tantas vezes quanto
-    ; o tamanho da list, repete
-    if: (idem: {arg | right | grt: 0}) -> (idem: {
-      self: (arg | left) -> (arg | right | sub: 1)
+    -- Se não tiver iterado tantas vezes quanto
+    -- o tamanho da list, repete
+    if: (idem: {arg > right > grt: 0}) & (idem: {
+      self: (arg > left) & (arg > right > sub: 1)
     }) 
   }
 }
-def: #map
+def: #lib/map
 
 
-; Usa o mesmo método do map, mas a inclusão do elemento
-; processado na list é condicional
-; 
-; Assim a list resultante não precisa ter o mesmo
-; tamanho da de entrada
-;-------------------------------------------------------
+-- Usa o mesmo método do map, mas a inclusão do elemento
+-- processado na list é condicional
+-- 
+-- Assim a list resultante não precisa ter o mesmo
+-- tamanho da de entrada
 
 val: {
-  do: (val: (arg) -> (len | sub: 1)) -> * {
+  do: (val: (arg) & (len > sub: 1)) & %{
 
     aside: (idem: {
-      first
-      do: nada -> (arg | left)
+      lib/head
+      do: nada & (arg > left)
       push
     })
 
-    if: {peek} -> {append: (first)}
+    if: {peek} & {append: (lib/head)}
     pop
 
-    rest
+    lib/tail
 
-    if: (idem: {arg | right | grt: 0}) -> (idem: {
-      self: (arg | left) -> (arg | right | sub: 1)
+    if: (idem: {arg > right > grt: 0}) & (idem: {
+      self: (arg > left) & (arg > right > sub: 1)
     }) 
   }
 }
-def: #filter
+def: #lib/filter
 
 
-;==================================
-;              TEXT
-;==================================
+------------------------------------ TEXT
 
 val: {
-  aside: {val: "" | push}
+  aside: {val: "" > push}
 
-  each: {
+  lib/each: {
     as: @text
     push
     peek: 1
     conc: (peek)
-    pop | pop
+    pop > pop
     push
   }
 
-  peek | pop
+  peek > pop
 }
-def: #join
+def: #lib/join
 

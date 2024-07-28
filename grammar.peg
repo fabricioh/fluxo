@@ -1,4 +1,8 @@
 {
+  // https://github.com/mna/pigeon
+  // go install github.com/mna/pigeon@latest
+  // pigeon -o parser.go grammar.peg
+
   package main
 
   import (
@@ -50,7 +54,7 @@ expression = _ "(" _ ch: chain _ ")" _ {
   return Literal{ch, EXPRESSION}, nil
 }
 
-function = _ r: "*"? _ "{" _ f: chain _ "}" _ {
+function = _ r: "%"? _ "{" _ f: chain _ "}" _ {
 	fn := CreateFunction(f.([]Call), (r != nil))
 	fn.file, _ = PATH_STACK.Peek(0)
 	fn.line = c.pos.line
@@ -61,7 +65,7 @@ list = _ "[" _ l: value* _ "]" _ {
   return Literal{GetList[Literal](l), LIST}, nil
 }
 
-pair = _ l: value_no_pair "->" r: value_no_pair _ {
+pair = _ l: value_no_pair "&" r: value_no_pair _ {
   return Literal{Pair{l.(Literal), r.(Literal)}, PAIR}, nil
 }
 
@@ -90,12 +94,12 @@ nada = _ "nada" _ {
   return Nada, nil
 }
 
-comment = _ ";" [^\n\r]* _ {
+comment = _ "--" [^\n\r]* _ {
 	file, _ := PATH_STACK.Peek(0)
 	return Call{"comment", Nada, file, c.pos.line}, nil
 }
 
-pipe = "|" {
+pipe = ">" {
 	file, _ := PATH_STACK.Peek(0)
 	return Call{"pipe", Nada, file, c.pos.line}, nil
 }

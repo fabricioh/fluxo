@@ -147,7 +147,7 @@ func InitializeFunctions() {
 		},
 
 		{
-			name:        "takes",
+			name:        "constraints",
 			constraints: Constraint{FUNCTION, PAIR},
 			implementation: func(flow, argument Literal) (Literal, error) {
 				function := flow.value.(Function)
@@ -512,7 +512,7 @@ func InitializeFunctions() {
 
 		{
 			name:        "type",
-			constraints: Constraint{ANY, TYPE},
+			constraints: Constraint{ANY, NADA},
 			implementation: func(flow, argument Literal) (Literal, error) {
 				return Literal{flow.kind, TYPE}, nil
 			},

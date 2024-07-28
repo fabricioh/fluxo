@@ -12,14 +12,14 @@ Faça o download <a href="https://github.com/fabricioh/fluxo/releases">aqui</a>.
 </p>
 
 ```
-; Uma função anônima recursiva que
-; imprime números de 0 a 10
+-- Uma função anônima recursiva que
+-- imprime números de 0 a 10
 
-do: 0 -> * {
+do: 0 & %{
   arg
   println
 
-  if: {less: 10} -> {
+  if: {less: 10} & {
     self: (add: 1)
   }
 }
@@ -32,7 +32,7 @@ Basta baixar o zip [aqui](https://github.com/fabricioh/fluxo/releases), extrair 
 O seguinte programa é um Hello World em fluxo:
 
 ```
-val: "Hello, World!" | println
+val: "hello world!" > println
 ```
 
 Para incluir no seu script o arquivo `lib.fl` que vem com o release, basta usar a função `exec` passando o caminho para o arquivo como o primeiro valor de uma lista:
@@ -41,8 +41,8 @@ Para incluir no seu script o arquivo `lib.fl` que vem com o release, basta usar 
 exec: ["lib.fl"]
 
 val: ["hello" "fluxo!"]
-each: {println}
+lib/each: {println}
 
-; hello
-; fluxo!
+-- hello
+-- fluxo!
 ```

@@ -13,20 +13,20 @@ func FormatLiteral(literal Literal) string {
 
 	case PAIR:
 		return fmt.Sprintf(
-			"(%s -> %s)",
+			"(%s & %s)",
 			FormatLiteral(literal.value.(Pair).left),
 			FormatLiteral(literal.value.(Pair).right),
 		)
 
 	case FUNCTION:
 		function := literal.value.(Function)
-		result := "("
+		result := "{"
 
 		if function.is_recursive {
 			result += "recursive "
 		}
 
-		result += fmt.Sprintf("function (%s -> %s)",
+		result += fmt.Sprintf("function: %s -> %s",
 			literal.value.(Function).constraints.flow,
 			literal.value.(Function).constraints.parameter,
 		)
@@ -38,7 +38,7 @@ func FormatLiteral(literal Literal) string {
 			)
 		}
 
-		return result + ")"
+		return result + "}"
 
 	case TYPE:
 		return "@" + literal.value.(string)
