@@ -16,12 +16,12 @@ Faça o download <a href="https://github.com/fabricioh/fluxo/releases">aqui</a>.
 -- calcula o fatorial de um número
 
 val: %{
-	case: [
-		{less: 1} & {val: 1}
-		{else} & {
-			mul: (sub: 1 > self)
-		}
-	]
+  case: [
+    {less: 1} & {val: 1}
+    {else} & {
+      mul: (sub: 1 > self)
+    }
+  ]
 }
 def: #factorial
 
