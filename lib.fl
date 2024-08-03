@@ -4,6 +4,7 @@
 ------------------------------------ IO
 
 val: {aside: (idem: {arg > lib/join > println})}
+constraints: @any & @list
 def: #lib/printf
 
 
@@ -41,10 +42,16 @@ val: {
   -- Retorna a lista e limpa a stack
   peek > pop
 }
+constraints: @list & @pair
 def: #lib/slice
 
-val: {index: 0} > def: #lib/head
-val: {lib/slice: 1 & (len > sub: 1)} > def: #lib/tail
+val: {index: 0}
+constraints: @list & @nada
+def: #lib/head
+
+val: {lib/slice: 1 & (len > sub: 1)}
+constraints: @list & @nada
+def: #lib/tail
 
 
 -- Each recursivo, permitindo usar
@@ -66,6 +73,7 @@ val: %{
     })
   })
 }
+constraints: @list & @function
 def: #lib/each
 
 
@@ -98,6 +106,7 @@ val: {
     }) 
   }
 }
+constraints: @list & @function
 def: #lib/map
 
 
@@ -126,6 +135,7 @@ val: {
     }) 
   }
 }
+constraints: @list & @function
 def: #lib/filter
 
 
@@ -145,5 +155,10 @@ val: {
 
   peek > pop
 }
+constraints: @list & @nada
+def: #lib/join
+
+val: {arg > lib/join}
+constraints: @any & @list
 def: #lib/join
 

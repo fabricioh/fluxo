@@ -32,7 +32,7 @@ type Call struct {
 type Function struct {
 	name           string
 	body           []Call
-	constraints    Constraint
+	constraints    Constraints
 	is_recursive   bool
 	is_bound       bool
 	bound_argument Literal
@@ -41,7 +41,7 @@ type Function struct {
 	implementation func(Literal, Literal) (Literal, error)
 }
 
-type Constraint struct {
+type Constraints struct {
 	flow, parameter string
 }
 

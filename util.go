@@ -26,7 +26,7 @@ func FormatLiteral(literal Literal) string {
 			result += "recursive "
 		}
 
-		result += fmt.Sprintf("function: %s -> %s",
+		result += fmt.Sprintf("function: (@%s & @%s)",
 			literal.value.(Function).constraints.flow,
 			literal.value.(Function).constraints.parameter,
 		)
@@ -48,13 +48,17 @@ func FormatLiteral(literal Literal) string {
 	}
 }
 
+func FormatConstraint(constraints Constraints) string {
+	return fmt.Sprintf("(@%s & @%s)", constraints.flow, constraints.parameter)
+}
+
 func CreateFunction(body []Call, is_recursive bool) Function {
 	newFunction := Function{
 		name:         "ANON",
 		body:         body,
 		is_bound:     false,
 		is_recursive: is_recursive,
-		constraints:  Constraint{ANY, ANY},
+		constraints:  Constraints{ANY, ANY},
 	}
 
 	newFunction.implementation = func(flow, argument Literal) (Literal, error) {

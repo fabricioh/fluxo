@@ -48,45 +48,64 @@ func SolveExpressions(raw, flow Literal) (Literal, error) {
 	}
 }
 
-func SearchFunction(name string) (Function, bool) {
+/* Busca encontrar uma função com as exatas constraints passadas*/
+func SearchSpecificFunctionVariant(name string, constraints Constraints) (Function, error) {
 	for _, function := range FUNCTIONS {
-		if function.name == name {
-			return function, true
+		if function.name == name &&
+			constraints.flow == function.constraints.flow &&
+			constraints.parameter == function.constraints.parameter {
+			return function, nil
 		}
 	}
-	return Function{}, false
+
+	return Function{}, fmt.Errorf(
+		"\nvariant %s not found for function '%s'",
+		FormatConstraint(constraints), name,
+	)
 }
 
-func CheckFunctionConstraints(function Function, flow, argument Literal) error {
-	if function.constraints.flow != ANY {
-		if flow.kind != function.constraints.flow {
-			return fmt.Errorf("\nfunction '%s' expected @%s in the flow, got @%s",
-				function.name, function.constraints.flow, flow.kind)
+/* Busca encontrar uma função, podendo esta ser genérica (@any & @any)*/
+func SearchCompatibleFunctionVariant(name string, constraints Constraints) (Function, error) {
+	found_one := false
+	generic, found_generic := Function{}, false
+
+	for _, function := range FUNCTIONS {
+
+		if function.name == name {
+			found_one = true
+
+			if function.constraints.flow == ANY && function.constraints.parameter == ANY {
+				found_generic = true
+				generic = function
+				continue
+			}
+
+			if (function.constraints.flow == ANY ||
+				function.constraints.flow == constraints.flow) &&
+				(function.constraints.parameter == ANY ||
+					function.constraints.parameter == constraints.parameter) {
+
+				return function, nil
+			}
 		}
 	}
 
-	if function.constraints.parameter != ANY {
-		if argument.kind != function.constraints.parameter {
-			return fmt.Errorf("\nfunction '%s' expected @%s as argument, got @%s",
-				function.name, function.constraints.parameter, argument.kind)
-		}
+	if found_generic {
+		return generic, nil
 	}
 
-	return nil
+	if found_one {
+		return Function{}, fmt.Errorf(
+			"\nno variant (@%s & @%s) found for function '%s'",
+			constraints.flow, constraints.parameter, name,
+		)
+	} else {
+		return Function{}, fmt.Errorf("\nfunction '%s' not declared", name)
+	}
 }
 
 func ExecuteFunction(function Function, flow, argument Literal) (Literal, error) {
 	// fmt.Printf("calling: %s\n", function.name)
-
-	expandedArgument, err := SolveExpressions(argument, flow)
-	if err != nil {
-		return Nada, err
-	}
-
-	err = CheckFunctionConstraints(function, flow, expandedArgument)
-	if err != nil {
-		return Nada, err
-	}
 
 	if function.is_bound {
 		// fmt.Printf("bound to: %s\n", FormatLiteral(function.bound_argument))
@@ -95,9 +114,9 @@ func ExecuteFunction(function Function, flow, argument Literal) (Literal, error)
 		defer ARGUMENT_STACK.Pop()
 
 	} else {
-		if expandedArgument != Nada {
-			// fmt.Printf("pushing argument: %s\n", FormatLiteral(expandedArgument))
-			ARGUMENT_STACK.Push(expandedArgument)
+		if argument != Nada {
+			// fmt.Printf("pushing argument: %s\n", FormatLiteral(argument))
+			ARGUMENT_STACK.Push(argument)
 			defer ARGUMENT_STACK.Pop()
 		}
 	}
@@ -107,7 +126,7 @@ func ExecuteFunction(function Function, flow, argument Literal) (Literal, error)
 		defer FUNCTION_STACK.Pop()
 	}
 
-	result, err := function.implementation(flow, expandedArgument)
+	result, err := function.implementation(flow, argument)
 
 	if err != nil {
 		return Nada, err
@@ -124,22 +143,29 @@ func ExecuteCalls(calls []Call, startingFlow Literal) (Literal, error) {
 			continue
 		}
 
-		if function, ok := SearchFunction(call.functionName); ok {
-			var err error = nil
+		solvedArgument, err := SolveExpressions(call.argument, flow)
 
-			flow, err = ExecuteFunction(function, flow, call.argument)
+		if err != nil {
+			return Nada, err
+		}
 
-			if err != nil {
-				return Nada, fmt.Errorf("| %s: at %s line %d\n%w",
-					call.functionName,
-					filepath.Base(call.file),
-					call.line,
-					err,
-				)
-			}
+		function, err := SearchCompatibleFunctionVariant(call.functionName, Constraints{
+			flow.kind, solvedArgument.kind,
+		})
 
-		} else {
-			return Nada, fmt.Errorf("function %s not found", call.functionName)
+		if err != nil {
+			return Nada, err
+		}
+
+		flow, err = ExecuteFunction(function, flow, solvedArgument)
+
+		if err != nil {
+			return Nada, fmt.Errorf("| %s: at %s line %d\n%w",
+				call.functionName,
+				filepath.Base(call.file),
+				call.line,
+				err,
+			)
 		}
 	}
 

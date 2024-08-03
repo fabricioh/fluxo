@@ -13,16 +13,20 @@ Faça o download <a href="https://github.com/fabricioh/fluxo/releases">aqui</a>.
 
 ```
 -- Uma função anônima recursiva que
--- imprime números de 0 a 10
+-- calcula o fatorial de um número
 
-do: 0 & %{
-  arg
-  println
-
-  if: {less: 10} & {
-    self: (add: 1)
-  }
+val: %{
+	case: [
+		{less: 1} & {val: 1}
+		{else} & {
+			mul: (sub: 1 > self)
+		}
+	]
 }
+def: #factorial
+
+val: 5 > factorial > println
+-- 120
 ```
 
 ## Utilização
@@ -32,7 +36,7 @@ Basta baixar o zip [aqui](https://github.com/fabricioh/fluxo/releases), extrair 
 O seguinte programa é um Hello World em fluxo:
 
 ```
-val: "hello world!" > println
+print: "hello world!"
 ```
 
 Para incluir no seu script o arquivo `lib.fl` que vem com o release, basta usar a função `exec` passando o caminho para o arquivo como o primeiro valor de uma lista:
@@ -40,9 +44,10 @@ Para incluir no seu script o arquivo `lib.fl` que vem com o release, basta usar 
 ```
 exec: ["lib.fl"]
 
-val: ["hello" "fluxo!"]
-lib/each: {println}
+val: [1 2 3 4]
+lib/map: {mul: 2}
+println
 
--- hello
--- fluxo!
+-- [2 4 6 8]
 ```
+
