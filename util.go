@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func FormatLiteral(literal Literal) string {
-	switch literal.kind {
+	switch literal.kind.name {
 	case LIST:
 		result := "[ "
 		for _, elem := range literal.value.([]Literal) {
@@ -27,8 +27,8 @@ func FormatLiteral(literal Literal) string {
 		}
 
 		result += fmt.Sprintf("function: (@%s & @%s)",
-			literal.value.(Function).constraints.flow,
-			literal.value.(Function).constraints.parameter,
+			literal.value.(Function).constraints.flow.Format(),
+			literal.value.(Function).constraints.parameter.Format(),
 		)
 
 		if function.is_bound {
@@ -41,7 +41,7 @@ func FormatLiteral(literal Literal) string {
 		return result + "}"
 
 	case TYPE:
-		return "@" + literal.value.(string)
+		return literal.value.(Kind).Format()
 
 	default:
 		return fmt.Sprintf("%v", literal.value)
@@ -49,7 +49,7 @@ func FormatLiteral(literal Literal) string {
 }
 
 func FormatConstraint(constraints Constraints) string {
-	return fmt.Sprintf("(@%s & @%s)", constraints.flow, constraints.parameter)
+	return fmt.Sprintf("(%s & %s)", constraints.flow.Format(), constraints.parameter.Format())
 }
 
 func CreateFunction(body []Call, is_recursive bool) Function {
@@ -58,7 +58,7 @@ func CreateFunction(body []Call, is_recursive bool) Function {
 		body:         body,
 		is_bound:     false,
 		is_recursive: is_recursive,
-		constraints:  Constraints{ANY, ANY},
+		constraints:  Constraints{Kind{name: ANY}, Kind{name: ANY}},
 	}
 
 	newFunction.implementation = func(flow, argument Literal) (Literal, error) {
@@ -66,4 +66,24 @@ func CreateFunction(body []Call, is_recursive bool) Function {
 	}
 
 	return newFunction
+}
+
+func DetermineListSpec(list []Literal) Kind {
+	spec := Kind{name: ANY}
+
+	for i, elem := range list {
+		if i == 0 {
+			spec = elem.kind
+			continue
+		}
+
+		// fmt.Printf("%s == %s = %v\n", spec.Format(), elem.kind.Format(), spec.Matches(&elem.kind))
+
+		if !spec.Matches(&elem.kind) {
+			spec = Kind{name: ANY}
+			break
+		}
+	}
+
+	return spec
 }

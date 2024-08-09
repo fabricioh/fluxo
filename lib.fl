@@ -4,7 +4,7 @@
 ------------------------------------ IO
 
 val: {aside: (idem: {arg > lib/join > println})}
-constraints: @any & @list
+constraints: @any & @list(@any)
 def: #lib/printf
 
 
@@ -12,8 +12,8 @@ def: #lib/printf
 
 
 -- Esta função é uma das mais básicas,
--- pois outras funções como map, lib/filter,
--- rest, etc, dependem dela
+-- pois outras funções como map, filter,
+-- head, tail, etc, dependem dela
 
 val: {
 
@@ -42,15 +42,15 @@ val: {
   -- Retorna a lista e limpa a stack
   peek > pop
 }
-constraints: @list & @pair
+constraints: @list(@any) & @pair(@number & @number)
 def: #lib/slice
 
 val: {index: 0}
-constraints: @list & @nada
+constraints: @list(@any) & @nada
 def: #lib/head
 
 val: {lib/slice: 1 & (len > sub: 1)}
-constraints: @list & @nada
+constraints: @list(@any) & @nada
 def: #lib/tail
 
 
@@ -73,7 +73,7 @@ val: %{
     })
   })
 }
-constraints: @list & @function
+constraints: @list(@any) & @function
 def: #lib/each
 
 
@@ -106,7 +106,7 @@ val: {
     }) 
   }
 }
-constraints: @list & @function
+constraints: @list(@any) & @function
 def: #lib/map
 
 
@@ -135,7 +135,7 @@ val: {
     }) 
   }
 }
-constraints: @list & @function
+constraints: @list(@any) & @function
 def: #lib/filter
 
 
@@ -155,10 +155,10 @@ val: {
 
   peek > pop
 }
-constraints: @list & @nada
+constraints: @list(@any) & @nada
 def: #lib/join
 
 val: {arg > lib/join}
-constraints: @any & @list
+constraints: @any & @list(@any)
 def: #lib/join
 

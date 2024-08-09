@@ -51,42 +51,67 @@ ident = _ i: [a-zA-Z0-9_/]+ _ {
 }
 
 expression = _ "(" _ ch: chain _ ")" _ {
-  return Literal{ch, EXPRESSION}, nil
+  return Literal{ch, Kind{name: EXPRESSION}}, nil
 }
 
 function = _ r: "%"? _ "{" _ f: chain _ "}" _ {
 	fn := CreateFunction(f.([]Call), (r != nil))
 	fn.file, _ = PATH_STACK.Peek(0)
 	fn.line = c.pos.line
-	return Literal{fn, FUNCTION}, nil
+	return Literal{fn, Kind{name: FUNCTION}}, nil
 }
 
 list = _ "[" _ l: value* _ "]" _ {
-  return Literal{GetList[Literal](l), LIST}, nil
+  list := GetList[Literal](l)
+  spec := DetermineListSpec(list)
+  return Literal{list, Kind{name: LIST, spec1: &spec}}, nil
 }
 
 pair = _ l: value_no_pair "&" r: value_no_pair _ {
-  return Literal{Pair{l.(Literal), r.(Literal)}, PAIR}, nil
+  left := l.(Literal)
+  right := r.(Literal)
+  return Literal{Pair{left, right}, Kind{PAIR, &left.kind, &right.kind}}, nil
 }
 
-kind = _ "@" k: ("any"/"nada"/"text"/"number"/"logical"/"pair"/"list"/"function") _ {
-	return Literal{string(k.([]uint8)), TYPE}, nil
+kind = _ "@" k: ("any"/"nada"/"text"/"number"/"logical"/pair_kind/list_kind/"function"/"type") _ {
+  switch val := k.(type) {
+  case []uint8:
+	  return Literal{Kind{name: string(val)}, Kind{name: TYPE}}, nil
+  case Kind:
+	  return Literal{val, Kind{name: TYPE}}, nil
+  default:
+    return Nada, nil
+  }
+}
+
+list_kind = _ "list(" _ spec: kind _ ")" _ {
+  lit := spec.(Literal)
+  finalSpec := lit.value.(Kind)
+  return Kind{name: LIST, spec1: &finalSpec}, nil
+}
+
+pair_kind = _ "pair(" _ left: kind _ "&" _ right: kind _  ")" _ {
+  leftLit := left.(Literal)
+  finalLeft := leftLit.value.(Kind)
+  rightLit := right.(Literal)
+  finalRight := rightLit.value.(Kind)
+  return Kind{name: PAIR, spec1: &finalLeft, spec2: &finalRight}, nil
 }
 
 number = _ n: [0-9]+ _ {
   num, _ := strconv.ParseInt(Join(n),10,0)
-  return Literal{num, NUMBER}, nil
+  return Literal{num, Kind{name: NUMBER}}, nil
 }
 
 hashtag = _ "#" t: ident _ {
-  return Literal{t, TEXT}, nil
+  return Literal{t, Kind{name: TEXT}}, nil
 }
 
 text = _ "\"" t: [^"]* "\"" _ {
-  return Literal{Join(t), TEXT}, nil
+  return Literal{Join(t), Kind{name: TEXT}}, nil
 }
 
-logical = _ l: (truth/lie) _ {return Literal{l, LOGICAL}, nil}
+logical = _ l: (truth/lie) _ {return Literal{l, Kind{name: LOGICAL}}, nil}
 truth = ("true"/"OK") {return true, nil}
 lie = ("false"/"FAIL") {return false, nil}
 

@@ -7,7 +7,7 @@ import (
 )
 
 func SolveExpressions(raw, flow Literal) (Literal, error) {
-	switch raw.kind {
+	switch raw.kind.name {
 	case EXPRESSION:
 		result, err := ExecuteCalls(raw.value.([]Call), flow)
 
@@ -19,6 +19,7 @@ func SolveExpressions(raw, flow Literal) (Literal, error) {
 
 	case LIST:
 		solvedList := []Literal{}
+
 		for _, literal := range raw.value.([]Literal) {
 			solved, err := SolveExpressions(literal, flow)
 
@@ -28,7 +29,10 @@ func SolveExpressions(raw, flow Literal) (Literal, error) {
 
 			solvedList = append(solvedList, solved)
 		}
-		return Literal{solvedList, LIST}, nil
+
+		spec := DetermineListSpec(solvedList)
+
+		return Literal{solvedList, Kind{name: LIST, spec1: &spec}}, nil
 
 	case PAIR:
 		left, err := SolveExpressions(raw.value.(Pair).left, flow)
@@ -41,7 +45,10 @@ func SolveExpressions(raw, flow Literal) (Literal, error) {
 			return Nada, err
 		}
 
-		return Literal{Pair{left, right}, PAIR}, nil
+		return Literal{
+			Pair{left, right},
+			Kind{name: PAIR, spec1: &left.kind, spec2: &right.kind},
+		}, nil
 
 	default:
 		return raw, nil
@@ -51,9 +58,15 @@ func SolveExpressions(raw, flow Literal) (Literal, error) {
 /* Busca encontrar uma função com as exatas constraints passadas*/
 func SearchSpecificFunctionVariant(name string, constraints Constraints) (Function, error) {
 	for _, function := range FUNCTIONS {
+		// if function.name == name &&
+		// 	constraints.flow == function.constraints.flow &&
+		// 	constraints.parameter == function.constraints.parameter {
+		// 	return function, nil
+		// }
+
 		if function.name == name &&
-			constraints.flow == function.constraints.flow &&
-			constraints.parameter == function.constraints.parameter {
+			constraints.flow.Format() == function.constraints.flow.Format() &&
+			constraints.parameter.Format() == function.constraints.parameter.Format() {
 			return function, nil
 		}
 	}
@@ -69,24 +82,50 @@ func SearchCompatibleFunctionVariant(name string, constraints Constraints) (Func
 	found_one := false
 	generic, found_generic := Function{}, false
 
+	// fmt.Printf("searching: '%s' against %s\n", name, FormatConstraint(constraints))
+
 	for _, function := range FUNCTIONS {
 
 		if function.name == name {
+			// fmt.Printf("found (%s & %s)\n", function.constraints.flow.Format(), function.constraints.parameter.Format())
+
 			found_one = true
 
-			if function.constraints.flow == ANY && function.constraints.parameter == ANY {
+			if function.constraints.flow.name == ANY && function.constraints.parameter.name == ANY {
 				found_generic = true
 				generic = function
 				continue
 			}
 
-			if (function.constraints.flow == ANY ||
-				function.constraints.flow == constraints.flow) &&
-				(function.constraints.parameter == ANY ||
-					function.constraints.parameter == constraints.parameter) {
-
+			if function.constraints.flow.Matches(&constraints.flow) &&
+				function.constraints.parameter.Matches(&constraints.parameter) {
 				return function, nil
 			}
+
+			// if function.constraints.flow.MatchesStrict(&constraints.flow) &&
+			// 	function.constraints.parameter.MatchesStrict(&constraints.parameter) {
+			// 	return function, nil
+			// }
+
+			// if function.constraints.flow.Matches(&constraints.flow) &&
+			// 	function.constraints.parameter.Matches(&constraints.parameter) {
+			// 	generic = function
+			// 	found_generic = true
+			// }
+
+			// if function.constraints.flow == ANY && function.constraints.parameter == ANY {
+			// 	found_generic = true
+			// 	generic = function
+			// 	continue
+			// }
+
+			// if (function.constraints.flow == ANY ||
+			// 	function.constraints.flow == constraints.flow) &&
+			// 	(function.constraints.parameter == ANY ||
+			// 		function.constraints.parameter == constraints.parameter) {
+
+			// 	return function, nil
+			// }
 		}
 	}
 
@@ -96,8 +135,8 @@ func SearchCompatibleFunctionVariant(name string, constraints Constraints) (Func
 
 	if found_one {
 		return Function{}, fmt.Errorf(
-			"\nno variant (@%s & @%s) found for function '%s'",
-			constraints.flow, constraints.parameter, name,
+			"\nno variant (%s & %s) found for function '%s'",
+			constraints.flow.Format(), constraints.parameter.Format(), name,
 		)
 	} else {
 		return Function{}, fmt.Errorf("\nfunction '%s' not declared", name)

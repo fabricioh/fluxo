@@ -15,7 +15,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "val",
-		constraints: Constraints{ANY, ANY},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: ANY}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return argument, nil
 		},
@@ -23,7 +23,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "val",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return flow, nil
 		},
@@ -33,7 +33,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "print",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			fmt.Printf("%s", FormatLiteral(flow))
 			return flow, nil
@@ -42,7 +42,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "print",
-		constraints: Constraints{ANY, ANY},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: ANY}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			fmt.Printf("%s", FormatLiteral(argument))
 			return flow, nil
@@ -51,7 +51,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "println",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			fmt.Printf("%s\n", FormatLiteral(flow))
 			return flow, nil
@@ -60,7 +60,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "println",
-		constraints: Constraints{ANY, ANY},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: ANY}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			fmt.Printf("%s\n", FormatLiteral(argument))
 			return flow, nil
@@ -71,23 +71,23 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "conc",
-		constraints: Constraints{TEXT, TEXT},
+		constraints: Constraints{Kind{name: TEXT}, Kind{name: TEXT}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(string) + argument.value.(string), TEXT}, nil
+			return Literal{flow.value.(string) + argument.value.(string), Kind{name: TEXT}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "chars",
-		constraints: Constraints{TEXT, NADA},
+		constraints: Constraints{Kind{name: TEXT}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			list := []Literal{}
 
 			for _, c := range flow.value.(string) {
-				list = append(list, Literal{string(c), TEXT})
+				list = append(list, Literal{string(c), Kind{name: TEXT}})
 			}
 
-			return Literal{list, LIST}, nil
+			return Literal{list, Kind{name: LIST, spec1: &Kind{name: TEXT}}}, nil
 		},
 	})
 
@@ -95,41 +95,41 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "add",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(int64) + argument.value.(int64), NUMBER}, nil
+			return Literal{flow.value.(int64) + argument.value.(int64), Kind{name: NUMBER}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "sub",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(int64) - argument.value.(int64), NUMBER}, nil
+			return Literal{flow.value.(int64) - argument.value.(int64), Kind{name: NUMBER}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "mul",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(int64) * argument.value.(int64), NUMBER}, nil
+			return Literal{flow.value.(int64) * argument.value.(int64), Kind{name: NUMBER}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "div",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(int64) / argument.value.(int64), NUMBER}, nil
+			return Literal{flow.value.(int64) / argument.value.(int64), Kind{name: NUMBER}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "mod",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.value.(int64) % argument.value.(int64), NUMBER}, nil
+			return Literal{flow.value.(int64) % argument.value.(int64), Kind{name: NUMBER}}, nil
 		},
 	})
 
@@ -137,7 +137,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "set",
-		constraints: Constraints{ANY, TEXT},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: TEXT}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			VARIABLES[argument.value.(string)] = flow
 			return flow, nil
@@ -146,7 +146,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "get",
-		constraints: Constraints{ANY, TEXT},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: TEXT}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			val, ok := VARIABLES[argument.value.(string)]
 
@@ -162,7 +162,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "def",
-		constraints: Constraints{FUNCTION, TEXT},
+		constraints: Constraints{Kind{name: FUNCTION}, Kind{name: TEXT}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			function := flow.value.(Function)
 			name := argument.value.(string)
@@ -182,29 +182,29 @@ func InitializeFunctions() {
 
 			FUNCTIONS = append(FUNCTIONS, function)
 
-			return Literal{function, FUNCTION}, nil
+			return Literal{function, Kind{name: FUNCTION}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "constraints",
-		constraints: Constraints{FUNCTION, PAIR},
+		constraints: Constraints{Kind{name: FUNCTION}, Kind{PAIR, &Kind{name: TYPE}, &Kind{name: TYPE}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			function := flow.value.(Function)
 			function.constraints = Constraints{
-				argument.value.(Pair).left.value.(string),
-				argument.value.(Pair).right.value.(string),
+				argument.value.(Pair).left.value.(Kind),
+				argument.value.(Pair).right.value.(Kind),
 			}
 
 			// fmt.Printf("%v", FormatLiteral(Literal{function, FUNCTION}))
 
-			return Literal{function, FUNCTION}, nil
+			return Literal{function, Kind{name: FUNCTION}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "do",
-		constraints: Constraints{ANY, PAIR},
+		constraints: Constraints{Kind{name: ANY}, Kind{PAIR, &Kind{name: ANY}, &Kind{name: FUNCTION}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			function := argument.value.(Pair).right.value.(Function)
 			actualArgument := argument.value.(Pair).left
@@ -215,7 +215,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "arg",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			if arg, ok := ARGUMENT_STACK.Peek(0); ok {
 				return arg, nil
@@ -227,7 +227,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "self",
-		constraints: Constraints{ANY, ANY},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: ANY}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			if function, ok := FUNCTION_STACK.Peek(0); ok {
 				return ExecuteFunction(function, flow, argument)
@@ -239,25 +239,25 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "bind",
-		constraints: Constraints{ANY, PAIR},
+		constraints: Constraints{Kind{name: ANY}, Kind{PAIR, &Kind{name: ANY}, &Kind{name: FUNCTION}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			function := argument.value.(Pair).right.value.(Function)
 			function.is_bound = true
 			function.bound_argument = argument.value.(Pair).left
-			return Literal{function, FUNCTION}, nil
+			return Literal{function, Kind{name: FUNCTION}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "idem",
-		constraints: Constraints{ANY, FUNCTION},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: FUNCTION}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			if arg, ok := ARGUMENT_STACK.Peek(1); ok {
 				// fmt.Printf("current arg: %s", FormatLiteral(arg))
 				function := argument.value.(Function)
 				function.is_bound = true
 				function.bound_argument = arg
-				return Literal{function, FUNCTION}, nil
+				return Literal{function, Kind{name: FUNCTION}}, nil
 			} else {
 				return flow, errors.New("\nno argument in current scope")
 			}
@@ -268,7 +268,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "push",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			STACK.Push(flow)
 			return flow, nil
@@ -277,7 +277,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "pop",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			if STACK.Pop() {
 				return flow, nil
@@ -289,15 +289,23 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "peek",
-		constraints: Constraints{ANY, ANY},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			index := 0
-
-			if argument.kind == NUMBER {
-				index = int(argument.value.(int64))
+			if top, ok := STACK.Peek(0); ok {
+				return top, nil
+			} else {
+				return flow, errors.New("\ncannot peek empty stack")
 			}
+		},
+	})
 
-			if top, ok := STACK.Peek(index); ok {
+	FUNCTIONS = append(FUNCTIONS, Function{
+		name:        "peek",
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NUMBER}},
+		implementation: func(flow, argument Literal) (Literal, error) {
+			index := argument.value.(int64)
+
+			if top, ok := STACK.Peek(int(index)); ok {
 				return top, nil
 			} else {
 				return flow, errors.New("\ncannot peek empty stack")
@@ -307,9 +315,10 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "stack",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{STACK.content, LIST}, nil
+			spec := DetermineListSpec(STACK.content)
+			return Literal{STACK.content, Kind{name: LIST, spec1: &spec}}, nil
 		},
 	})
 
@@ -317,7 +326,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "if",
-		constraints: Constraints{ANY, PAIR},
+		constraints: Constraints{Kind{name: ANY}, Kind{PAIR, &Kind{name: FUNCTION}, &Kind{name: FUNCTION}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			test := argument.value.(Pair).left.value.(Function)
 			arm := argument.value.(Pair).right.value.(Function)
@@ -338,7 +347,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "case",
-		constraints: Constraints{ANY, LIST},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: LIST, spec1: &Kind{PAIR, &Kind{name: FUNCTION}, &Kind{name: FUNCTION}}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			for _, elem := range argument.value.([]Literal) {
 				test := elem.value.(Pair).left.value.(Function)
@@ -361,7 +370,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "and",
-		constraints: Constraints{ANY, LIST},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: LIST, spec1: &Kind{name: FUNCTION}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			for _, elem := range argument.value.([]Literal) {
 				result, err := ExecuteFunction(elem.value.(Function), flow, Nada)
@@ -371,17 +380,17 @@ func InitializeFunctions() {
 				}
 
 				if !result.value.(bool) {
-					return Literal{false, LOGICAL}, nil
+					return Literal{false, Kind{name: LOGICAL}}, nil
 				}
 			}
 
-			return Literal{true, LOGICAL}, nil
+			return Literal{true, Kind{name: LOGICAL}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "or",
-		constraints: Constraints{ANY, LIST},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: LIST, spec1: &Kind{name: FUNCTION}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			for _, elem := range argument.value.([]Literal) {
 				result, err := ExecuteFunction(elem.value.(Function), flow, Nada)
@@ -391,61 +400,61 @@ func InitializeFunctions() {
 				}
 
 				if result.value.(bool) {
-					return Literal{true, LOGICAL}, nil
+					return Literal{true, Kind{name: LOGICAL}}, nil
 				}
 			}
 
-			return Literal{false, LOGICAL}, nil
+			return Literal{false, Kind{name: LOGICAL}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "less",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return Literal{
 				flow.value.(int64) < argument.value.(int64),
-				NUMBER,
+				Kind{name: NUMBER},
 			}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "less_eql",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return Literal{
 				flow.value.(int64) <= argument.value.(int64),
-				NUMBER,
+				Kind{name: NUMBER},
 			}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "grt",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return Literal{
 				flow.value.(int64) > argument.value.(int64),
-				NUMBER,
+				Kind{name: NUMBER},
 			}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "grt_eql",
-		constraints: Constraints{NUMBER, NUMBER},
+		constraints: Constraints{Kind{name: NUMBER}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return Literal{
 				flow.value.(int64) >= argument.value.(int64),
-				NUMBER,
+				Kind{name: NUMBER},
 			}, nil
 		},
 	})
 
 	// FUNCTIONS = append(FUNCTIONS, Function{
 	// 	name:        "eql",
-	// 	constraints: Constraints{LOGICAL, NADA},
+	// 	constraints: Constraints{LOGICAL, Kind{name: NADA}},
 	// 	implementation: func(flow, argument Literal) (Literal, error) {
 
 	// 	},
@@ -453,17 +462,17 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "not",
-		constraints: Constraints{LOGICAL, NADA},
+		constraints: Constraints{Kind{name: LOGICAL}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{!flow.value.(bool), LOGICAL}, nil
+			return Literal{!flow.value.(bool), Kind{name: LOGICAL}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "else",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{true, LOGICAL}, nil
+			return Literal{true, Kind{name: LOGICAL}}, nil
 		},
 	})
 
@@ -471,7 +480,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "aside",
-		constraints: Constraints{ANY, FUNCTION},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: FUNCTION}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			oldFlow := flow
 			_, err := ExecuteFunction(argument.value.(Function), flow, Nada)
@@ -486,7 +495,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "wait",
-		constraints: Constraints{ANY, NUMBER},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			time.Sleep(time.Duration(argument.value.(int64)) * time.Millisecond)
 			return flow, nil
@@ -495,7 +504,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "exit",
-		constraints: Constraints{ANY, NUMBER},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			os.Exit(int(argument.value.(int64)))
 			return flow, nil
@@ -504,7 +513,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "panic",
-		constraints: Constraints{ANY, TEXT},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: TEXT}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return Nada, errors.New(argument.value.(string))
 		},
@@ -514,7 +523,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "left",
-		constraints: Constraints{PAIR, NADA},
+		constraints: Constraints{Kind{PAIR, &Kind{name: ANY}, &Kind{name: ANY}}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return flow.value.(Pair).left, nil
 		},
@@ -522,7 +531,7 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "right",
-		constraints: Constraints{PAIR, NADA},
+		constraints: Constraints{Kind{PAIR, &Kind{name: ANY}, &Kind{name: ANY}}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			return flow.value.(Pair).right, nil
 		},
@@ -530,15 +539,15 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "len",
-		constraints: Constraints{LIST, NADA},
+		constraints: Constraints{Kind{name: LIST, spec1: &Kind{name: ANY}}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{int64(len(flow.value.([]Literal))), NUMBER}, nil
+			return Literal{int64(len(flow.value.([]Literal))), Kind{name: NUMBER}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "index",
-		constraints: Constraints{LIST, NUMBER},
+		constraints: Constraints{Kind{name: LIST, spec1: &Kind{name: ANY}}, Kind{name: NUMBER}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			if int(argument.value.(int64)) > len(flow.value.([]Literal))-1 {
 				return Nada, errors.New("\nindex out of bounds")
@@ -550,11 +559,12 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "append",
-		constraints: Constraints{LIST, ANY},
+		constraints: Constraints{Kind{name: LIST, spec1: &Kind{name: ANY}}, Kind{name: ANY}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			list := flow.value.([]Literal)
 			list = append(list, argument)
-			return Literal{list, LIST}, nil
+			spec := DetermineListSpec(list)
+			return Literal{list, Kind{name: LIST, spec1: &spec}}, nil
 		},
 	})
 
@@ -562,47 +572,48 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "type",
-		constraints: Constraints{ANY, NADA},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: NADA}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.kind, TYPE}, nil
+			return Literal{flow.kind, Kind{name: TYPE}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "is",
-		constraints: Constraints{ANY, TYPE},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: TYPE}},
 		implementation: func(flow, argument Literal) (Literal, error) {
-			return Literal{flow.kind == argument.value.(string), LOGICAL}, nil
+			other := argument.value.(Kind)
+			return Literal{flow.kind.Matches(&other), Kind{name: LOGICAL}}, nil
 		},
 	})
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "as",
-		constraints: Constraints{ANY, TYPE},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: TYPE}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			switch argument.value.(string) {
 			case TEXT:
-				return Literal{FormatLiteral(flow), TEXT}, nil
+				return Literal{FormatLiteral(flow), Kind{name: TEXT}}, nil
 
 			case NUMBER:
-				if flow.kind == TEXT {
+				if flow.kind == (Kind{name: TEXT}) {
 					number, err := strconv.ParseInt(flow.value.(string), 10, 64)
 
 					if err != nil {
 						return Nada, err
 					}
 
-					return Literal{number, NUMBER}, nil
+					return Literal{number, Kind{name: NUMBER}}, nil
 
 				} else {
-					return Nada, fmt.Errorf("\ncan't convert @%s to @number", flow.kind)
+					return Nada, fmt.Errorf("\ncan't convert @%s to @number", flow.kind.Format())
 				}
 
 			case NADA:
 				return Nada, nil
 
 			case ANY, PAIR, TYPE, LIST, LOGICAL, FUNCTION:
-				return Nada, fmt.Errorf("\ncan't convert @%s to @%s", flow.kind, argument.value.(string))
+				return Nada, fmt.Errorf("\ncan't convert @%s to @%s", flow.kind.Format(), argument.value.(Kind).Format())
 			}
 
 			return Nada, fmt.Errorf("\nno such type as @%s", argument.value.(string))
@@ -613,15 +624,15 @@ func InitializeFunctions() {
 
 	FUNCTIONS = append(FUNCTIONS, Function{
 		name:        "exec",
-		constraints: Constraints{ANY, LIST},
+		constraints: Constraints{Kind{name: ANY}, Kind{name: LIST, spec1: &Kind{name: TEXT}}},
 		implementation: func(flow, argument Literal) (Literal, error) {
 			for _, literal := range argument.value.([]Literal) {
-				if literal.kind != TEXT {
-					return Nada, fmt.Errorf(
-						"\nfunction 'exec' expected a @list of @text, found element of type @%s",
-						literal.kind,
-					)
-				}
+				// if literal.kind != TEXT {
+				// 	return Nada, fmt.Errorf(
+				// 		"\nfunction 'exec' expected a @list of @text, found element of type @%s",
+				// 		literal.kind,
+				// 	)
+				// }
 
 				fileName := literal.value.(string)
 

@@ -15,7 +15,7 @@ const (
 
 type Literal struct {
 	value any
-	kind  string
+	kind  Kind
 }
 
 type Pair struct {
@@ -42,7 +42,43 @@ type Function struct {
 }
 
 type Constraints struct {
-	flow, parameter string
+	flow, parameter Kind
+}
+
+type Kind struct {
+	name         string
+	spec1, spec2 *Kind
+}
+
+func (k Kind) Format() string {
+	result := "@" + k.name
+
+	if k.spec1 != nil {
+		result += "(" + k.spec1.Format()
+
+		if k.spec2 != nil {
+			result += " & " + k.spec2.Format()
+		}
+
+		result += ")"
+	}
+
+	return result
+}
+
+func (k *Kind) Matches(other *Kind) bool {
+	if k.name == ANY {
+		return true
+	}
+
+	switch k.name {
+	case LIST:
+		return other.name == LIST && k.spec1.Matches(other.spec1)
+	case PAIR:
+		return other.name == PAIR && k.spec1.Matches(other.spec1) && k.spec2.Matches(other.spec2)
+	default:
+		return k.name == other.name
+	}
 }
 
 type Stack[T any] struct {
@@ -77,4 +113,4 @@ var STACK = Stack[Literal]{}
 var ARGUMENT_STACK = Stack[Literal]{}
 var FUNCTION_STACK = Stack[Function]{}
 var PATH_STACK = Stack[string]{}
-var Nada = Literal{"nada", NADA}
+var Nada = Literal{"nada", Kind{name: NADA}}
